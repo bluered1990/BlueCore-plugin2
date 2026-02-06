@@ -1,0 +1,26 @@
+# Ranks Configuration
+ranks:
+  default:
+    prefix: "&7[Player]"
+    color: "&7"
+    priority: 1
+    permissions: []
+  vip:
+    prefix: "&a[VIP]"
+    color: "&a"
+    priority: 50
+    permissions:
+      - "bluecore.vip"
+  premium:
+    prefix: "&6[Premium]"
+    color: "&6"
+    priority: 75
+    permissions:
+      - "bluecore.premium"
+  admin:
+    prefix: "&c[Admin]"
+    color: "&c"
+    priority: 100
+    permissions:
+      - "bluecore.admin"
+      - "*"

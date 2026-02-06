@@ -1,0 +1,41 @@
+name: BlueCore
+version: '1.0.0'
+main: me.blueb8h.bluecore.BlueCore
+api-version: '1.20'
+authors: [BlueB8H]
+description: Core plugin with economy, ranks, and shop systems
+website: https://blueb8h.me
+
+commands:
+  bal:
+    description: Check your balance
+    aliases: [balance, money]
+  pay:
+    description: Pay another player
+    usage: /pay <player> <amount>
+  rank:
+    description: Manage player ranks
+    usage: /rank <set|get> <player> [rank]
+  shop:
+    description: Open the shop GUI
+    aliases: [store]
+
+permissions:
+  bluecore.balance:
+    description: Allows checking balance
+    default: true
+  bluecore.balance.others:
+    description: Allows checking others' balance
+    default: op
+  bluecore.pay:
+    description: Allows paying other players
+    default: true
+  bluecore.shop:
+    description: Allows using the shop
+    default: true
+  bluecore.rank.set:
+    description: Allows setting player ranks
+    default: op
+  bluecore.rank.get:
+    description: Allows viewing player ranks
+    default: true

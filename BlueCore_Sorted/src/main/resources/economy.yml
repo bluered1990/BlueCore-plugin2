@@ -1,0 +1,13 @@
+# Economy Configuration
+starting-balance: 1000.0
+max-balance: 1000000.0
+currency-symbol: "$"
+currency-name: "Dollars"
+
+# Sell values for blocks/items
+sell-values:
+  DIAMOND: 250.0
+  GOLD_INGOT: 50.0
+  IRON_INGOT: 10.0
+  COAL: 5.0
+  EMERALD: 100.0

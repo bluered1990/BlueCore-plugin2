@@ -1,0 +1,49 @@
+# Shop Configuration
+shop-name: "&8&lMarketplace"
+rows: 6
+
+categories:
+  blocks:
+    name: "&aBlocks"
+    slot: 10
+    material: "GRASS_BLOCK"
+    items:
+      DIAMOND_BLOCK:
+        buy: 2250.0
+        sell: 2000.0
+        material: "DIAMOND_BLOCK"
+        name: "&bDiamond Block"
+        lore:
+          - "&7Buy: &a$2250"
+          - "&7Sell: &c$2000"
+          - ""
+          - "&eShift-click to buy/sell stack!"
+  ores:
+    name: "&eOres"
+    slot: 12
+    material: "DIAMOND_ORE"
+    items:
+      DIAMOND:
+        buy: 500.0
+        sell: 250.0
+        material: "DIAMOND"
+        name: "&bDiamond"
+        lore:
+          - "&7Buy: &a$500"
+          - "&7Sell: &c$250"
+      GOLD_INGOT:
+        buy: 50.0
+        sell: 25.0
+        material: "GOLD_INGOT"
+        name: "&6Gold Ingot"
+  tools:
+    name: "&6Tools"
+    slot: 14
+    material: "DIAMOND_PICKAXE"
+    items:
+      DIAMOND_PICKAXE:
+        buy: 3000.0
+        sell: 1500.0
+        material: "DIAMOND_PICKAXE"
+        name: "&bDiamond Pickaxe"
+        enchant: true
