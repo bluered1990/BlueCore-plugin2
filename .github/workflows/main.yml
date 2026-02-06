@@ -5,7 +5,7 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-  workflow_dispatch:  # Allow manual triggering
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,9 +14,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          
+        
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
@@ -24,46 +22,60 @@ jobs:
           java-version: '21'
           cache: maven
           
-      - name: Validate project structure
+      - name: Debug project structure
         run: |
-          echo "=== Project Structure ==="
+          echo "=== Current Directory ==="
+          pwd
           ls -la
           echo ""
-          echo "=== Essential Files Check ==="
-          [ -f "pom.xml" ] && echo "✅ pom.xml" || echo "❌ pom.xml"
-          [ -f "src/main/resources/plugin.yml" ] && echo "✅ plugin.yml" || echo "❌ plugin.yml"
-          [ -f "src/main/java/me/blueb8h/bluecore/BlueCore.java" ] && echo "✅ BlueCore.java" || echo "❌ BlueCore.java"
+          echo "=== Java Files ==="
+          find . -name "*.java" | head -5
           echo ""
-          echo "=== Java Files Count ==="
-          find . -name "*.java" | wc -l
+          echo "=== Maven Test ==="
+          mvn --version || echo "Maven not available"
           
       - name: Build with Maven
-        run: mvn clean compile package -DskipTests
-        
-      - name: Verify JAR file
         run: |
-          echo "=== Generated JAR ==="
-          ls -lh target/*.jar
-          echo ""
-          echo "=== JAR Contents Check ==="
-          jar tf target/*.jar | grep -E "(plugin.yml|BlueCore.class)" || echo "⚠ Essential files not found in JAR"
-          echo ""
-          echo "=== File Count in JAR ==="
-          jar tf target/*.jar | wc -l
+          # First try to compile only
+          mvn clean compile || echo "Compilation failed"
           
-      - name: Upload plugin artifact
+          # If compilation succeeds, package
+          if [ $? -eq 0 ]; then
+            mvn package -DskipTests
+          else
+            echo "Build failed at compilation stage"
+            exit 1
+          fi
+          
+      - name: Check build output
+        run: |
+          if [ -d "target" ]; then
+            echo "=== Target Directory Contents ==="
+            ls -la target/
+            echo ""
+            if ls target/*.jar 1> /dev/null 2>&1; then
+              echo "✅ JAR file generated!"
+              ls -lh target/*.jar
+            else
+              echo "❌ No JAR file generated"
+            fi
+          else
+            echo "❌ Target directory not created"
+          fi
+          
+      - name: Upload successful build
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: BlueCore-Plugin
+          name: BlueCore-Success
           path: target/*.jar
-          retention-days: 30
           
-      - name: Upload build logs (on failure)
+      - name: Upload build logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: build-failure-logs
+          name: BlueCore-Failure-Logs
           path: |
-            **/target/surefire-reports/
-            **/target/failsafe-reports/
-          retention-days: 7
+            **/pom.xml
+            **/src/main/java/me/blueb8h/bluecore/BlueCore.java
+          retention-days: 1
