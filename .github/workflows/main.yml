@@ -8,74 +8,59 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
+      - uses: actions/checkout@v4
+      
+      - name: Check project structure
+        run: |
+          echo "=== Checking for BlueCore_Sorted folder ==="
+          if [ -d "BlueCore_Sorted" ]; then
+            echo "✅ Found BlueCore_Sorted/"
+            echo "Contents:"
+            ls -la BlueCore_Sorted/
+            echo ""
+            echo "Essential files:"
+            [ -f "BlueCore_Sorted/pom.xml" ] && echo "  ✅ pom.xml" || echo "  ❌ pom.xml"
+            [ -f "BlueCore_Sorted/src/main/resources/plugin.yml" ] && echo "  ✅ plugin.yml" || echo "  ❌ plugin.yml"
+          else
+            echo "❌ BlueCore_Sorted/ not found!"
+            echo "Root contents:"
+            ls -la
+            exit 1
+          fi
+
+  build:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
           java-version: '21'
+          distribution: 'temurin'
           cache: maven
           
-      - name: Debug project structure
+      - name: Build plugin
+        working-directory: BlueCore_Sorted  # <-- THIS IS THE KEY!
         run: |
-          echo "=== Current Directory ==="
-          pwd
-          ls -la
+          echo "Building from BlueCore_Sorted folder..."
+          mvn clean package -DskipTests
+          
+      - name: Verify JAR
+        working-directory: BlueCore_Sorted
+        run: |
+          echo "=== Generated JAR ==="
+          ls -lh target/*.jar
           echo ""
-          echo "=== Java Files ==="
-          find . -name "*.java" | head -5
-          echo ""
-          echo "=== Maven Test ==="
-          mvn --version || echo "Maven not available"
+          echo "=== Plugin info ==="
+          jar tf target/*.jar | grep -E "plugin.yml|BlueCore.class" || echo "Not found"
           
-      - name: Build with Maven
-        run: |
-          # First try to compile only
-          mvn clean compile || echo "Compilation failed"
-          
-          # If compilation succeeds, package
-          if [ $? -eq 0 ]; then
-            mvn package -DskipTests
-          else
-            echo "Build failed at compilation stage"
-            exit 1
-          fi
-          
-      - name: Check build output
-        run: |
-          if [ -d "target" ]; then
-            echo "=== Target Directory Contents ==="
-            ls -la target/
-            echo ""
-            if ls target/*.jar 1> /dev/null 2>&1; then
-              echo "✅ JAR file generated!"
-              ls -lh target/*.jar
-            else
-              echo "❌ No JAR file generated"
-            fi
-          else
-            echo "❌ Target directory not created"
-          fi
-          
-      - name: Upload successful build
-        if: success()
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BlueCore-Success
-          path: target/*.jar
-          
-      - name: Upload build logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: BlueCore-Failure-Logs
-          path: |
-            **/pom.xml
-            **/src/main/java/me/blueb8h/bluecore/BlueCore.java
-          retention-days: 1
+          name: BlueCore-Plugin
+          path: BlueCore_Sorted/target/*.jar  # <-- Path includes subfolder
